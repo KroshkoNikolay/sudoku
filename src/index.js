@@ -11,8 +11,7 @@ module.exports = function solveSudoku(matrix) {
   if (zeros.length === 0) {
     return matrix;
   }
-  console.log(zeros);
-  return matrix
+  return goRecursive(zeros, matrix);
 };
 
 function findZeros (matrix) {
@@ -62,3 +61,67 @@ function getOptions (matrix, row, col) {
   }
   return temp;
 };
+
+function goRecursive(source_zeros, source_matrix) {
+  const matrix = JSON.parse(JSON.stringify(source_matrix));
+  const zeros = JSON.parse(JSON.stringify(source_zeros));
+  const first_zeros = zeros.splice(0,1)[0];
+  for (let i = 0; i < first_zeros[2].length; i++) {
+    matrix[first_zeros[0]][first_zeros[1]] = first_zeros[2][i];
+    if (checkMatrixIsCorrect(matrix, first_zeros[0], first_zeros[1])) {
+      if (zeros.length > 0) {
+        resp = goRecursive(zeros, matrix);
+        if (resp) {
+          return resp;
+        }
+      } else {
+        return matrix;
+      }
+    } else {
+      continue;
+    }
+  }
+  return null;
+}
+
+function checkMatrixIsCorrect(matrix, row, col) {
+  const rowDiv = Math.floor(row / 3);
+  const colDiv = Math.floor(col / 3);
+  let knownElems = {};
+  for (let i = 0; i < matrix[row].length; i++) {
+    if (matrix[row][i] === 0) {
+      continue
+    } 
+    if (knownElems[matrix[row][i]] ){
+      return false;
+    }
+    knownElems[matrix[row][i]] = 1;
+  }
+
+  knownElems = {};
+  for (let i = 0; i < matrix.length; i++) {
+    if (matrix[i][col] === 0) {
+      continue
+    } 
+    if (knownElems[matrix[i][col]] ){
+      return false;
+    }
+    knownElems[matrix[i][col]] = 1;
+  }
+
+  knownElems = {};
+  for (let i = 0; i < 3; i++){
+    const rowM = rowDiv * 3 + i;
+    for (let y = 0; y < 3; y++) {
+      const colM = colDiv * 3 + y;
+      if (matrix[rowM][colM] === 0) {
+        continue
+      } 
+      if (knownElems[matrix[rowM][colM]] ){
+        return false;
+      }
+      knownElems[matrix[rowM][colM]] = 1;
+    }
+  }
+  return true
+}
